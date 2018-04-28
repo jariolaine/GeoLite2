@@ -49,14 +49,10 @@ NOTE! install.sql drops and recreates users GEOLITE2_A, GEOLITE2_B, GEOLITE2_OWN
 Database directories GEOLITE2_SCRIPT_DIR, GEOLITE2_LOG_DIR and GEOLITE2_DATA_DIR are dropped and recreated.
 
 Script install.sql needs four arguments
-
-Position 1 - name of tablespace for geolite2_owner and geolite2_reader
-
-Position 2 - name of tablespace for data schema A
-
-Position 2 - name of tablespace for data schema B
-
-Position 4 - name of temporary tablespace
+1. Name of tablespace for GEOLITE2_OWNER and GEOLITE2_READER
+2. Name of tablespace for data schema A
+3. Name of tablespace for data schema B
+4. Name of users temporary tablespace
 
 
 Run install script as SYS e.g.

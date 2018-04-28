@@ -45,7 +45,7 @@ chmod g+x /opt/geolite2/script/download_data.sh
 
 Install database objects.
 
-*NOTE*
+**NOTE!**
 install.sql drops and recreates users GEOLITE2_A, GEOLITE2_B, GEOLITE2_OWNER and GEOLITE2_READER if exists.
 Database directories GEOLITE2_SCRIPT_DIR, GEOLITE2_LOG_DIR and GEOLITE2_DATA_DIR are dropped and recreated.
 

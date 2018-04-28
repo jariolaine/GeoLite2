@@ -43,12 +43,11 @@ chgrp dba /opt/geolite2/script/download_data.sh
 chmod g+x opt/geolite2/script/download_data.sh
 ```
 
-Install database objects:
-NOTE! 
-install.sql drops and recreates users GEOLITE2_A, GEOLITE2_B, GEOLITE2_OWNER and GEOLITE2_READER if exists.
+Install database objects.
+NOTE! install.sql drops and recreates users GEOLITE2_A, GEOLITE2_B, GEOLITE2_OWNER and GEOLITE2_READER if exists.
 Database directories GEOLITE2_SCRIPT_DIR, GEOLITE2_LOG_DIR and GEOLITE2_DATA_DIR are dropped and recreated.
 
-Script arguments:
+Script install.sql needs four arguments
 Position 1 - name of tablespace for geolite2_owner and geolite2_reader
 Position 2 - name of tablespace for data schema A
 Position 2 - name of tablespace for data schema B

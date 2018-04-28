@@ -1,19 +1,24 @@
 Rem
-Rem   NAME
+Rem   Name
 Rem     create_users.sql
 Rem
-Rem   DESCRIPTION
+Rem   Description
+Rem     create needed database users
 Rem
-Rem   NOTES
+Rem   Change log
+Rem     JLa 27.03.2018 / Created
+Rem
+Rem   Notes
 Rem     Assumes the SYS user is connected.
 Rem
 Rem   Arguments:
-Rem     Position 1: Name of tablespace for geolite2_owner and geolite2_reader
-Rem     Position 2: Name of tablespace for data schema A
-Rem     Position 2: Name of tablespace for data schema B
+Rem     Position 1: Name of tablespace for GEOLITE2_OWNER and GEOLITE2_READER
+Rem     Position 2: Name of tablespace for data schema GEOLITE2_A
+Rem     Position 2: Name of tablespace for data schema GEOLITE2_B
 Rem     Position 4: Name of temporary tablespace
 Rem
 
+-- Drop users
 begin
   for c1 in(
     select username
@@ -31,26 +36,28 @@ begin
 end;
 /
 
+-- Create users
 create user geolite2_reader identified by geolite2 default tablespace &1 temporary tablespace &4
 /
-
-create user geolite2_owner identified by geolite2 default tablespace geolite2_users temporary tablespace temp
+create user geolite2_owner identified by geolite2 default tablespace &1 temporary tablespace &4
 /
+create user geolite2_a identified by geolite2 default tablespace &2 temporary tablespace &4
+/
+create user geolite2_b identified by geolite2 default tablespace &3 temporary tablespace &4
+/
+
+-- Quota to tablespaces
 alter user geolite2_owner quota unlimited on &1
-/
-
-create user geolite2_a identified by geolite2 default tablespace geolite2_a temporary tablespace temp
 /
 alter user geolite2_a quota unlimited on &2
 /
-alter user geolite2_a password expire account lock
-/
-
-create user geolite2_b identified by geolite2 default tablespace geolite2_b temporary tablespace temp
-/
 alter user geolite2_b quota unlimited on &3
 /
+
+-- Lock data users
 alter user geolite2_b password expire account lock
+/
+alter user geolite2_a password expire account lock
 /
 
 -- Grants to users

@@ -1,3 +1,17 @@
+Rem
+Rem   Name
+Rem     scheduler_job.sql
+Rem
+Rem   Description
+Rem     create scheduled job to run ETL proces
+Rem
+Rem   Change log
+Rem     JLa 27.03.2018 / Created
+Rem
+Rem   Notes
+Rem     Assumes the SYS user is connected
+Rem
+
 begin
 
   dbms_scheduler.create_job (
@@ -9,7 +23,7 @@ begin
     ,end_date => null
     ,enabled => false
     ,auto_drop => false
-    ,comments => 'Import Maxmid Geolite2 CSV data'
+    ,comments => 'Run ETL process for Maxmid Geolite2 CSV data'
   );
 
   dbms_scheduler.set_attribute( 

@@ -1,26 +1,19 @@
-/*
-drop sequence sgid_seq
-/
-drop view etl_city_locations
-/
-drop view etl_asn_blocks
-/
-drop view etl_city_blocks
-/
-drop table ext_city_locations
-/
-drop table ext_asn_blocks
-/
-drop table ext_city_blocks
-/
-drop table ext_download
-/
-drop table etl_flow
-/
-*/
+Rem
+Rem   Name
+Rem     geolite_owner_objects.sql
+Rem
+Rem   Description
+Rem     create needed objects to user GEOLITE2_OWNER
+Rem
+Rem   Change log
+Rem     JLa 27.03.2018 / Created
+Rem
+Rem   Notes
+Rem     Assumes the SYS user is connected and current_schema is set to GEOLITE2_OWNER
+Rem
 
--- Create external source tables
-create table ext_city_locations(
+-- External source tables
+create table geolite2_owner.ext_city_locations(
   geoname_id number(10,0),
   locale_code varchar2(5 char),
   continent_code varchar2(2 char),
@@ -64,7 +57,7 @@ organization external (
 )
 /
 
-create table ext_asn_blocks(
+create table geolite2_owner.ext_asn_blocks(
 	network_address varchar2(43 char),
 	autonomous_system_number number(10,0),
   autonomous_system_organization varchar2(256 char)
@@ -90,7 +83,7 @@ organization external (
 )
 /
 
-create table ext_city_blocks(
+create table geolite2_owner.ext_city_blocks(
 	network_address varchar2(43 char),
 	geoname_id number(10,0),
 	registered_country_geoname_id number(10,0),
@@ -123,7 +116,7 @@ organization external (
 )
 /
 
-create table ext_file_date(
+create table geolite2_owner.ext_file_date(
   file_name varchar2(256 char),
   file_date timestamp (6) with local time zone
 )
@@ -150,7 +143,8 @@ organization external (
 )
 /
 
-create table etl_control(
+-- Tables
+create table geolite2_owner.etl_control(
   sgid            number(38,0) not null,
   row_version     number(38,0) not null,
   created_on      timestamp (6) with local time zone not null,
@@ -168,7 +162,7 @@ create table etl_control(
 )
 /
 
-create table etl_metadata(
+create table geolite2_owner.etl_metadata(
   sgid          number(38,0) not null,
   row_version   number(38,0) not null,
   created_on    timestamp (6) with local time zone not null,
@@ -184,8 +178,8 @@ create table etl_metadata(
 )
 /
 
--- Create ETL views
-create or replace force view etl_city_locations
+-- ETL transformation views
+create or replace view geolite2_owner.etl_city_locations
 as
 select
   0 as geoname_id,
@@ -223,7 +217,7 @@ select
 from ext_city_locations
 /
 
-create or replace force view etl_asn_blocks
+create or replace view geolite2_owner.etl_asn_blocks
 as
 select
   ip_util.net_to_dec( network_address ) as network_start
@@ -234,7 +228,7 @@ select
 from ext_asn_blocks
 /
 
-create or replace force view etl_city_blocks
+create or replace view geolite2_owner.etl_city_blocks
 as
 select
    ip_util.net_to_dec( network_address ) as network_start
@@ -253,14 +247,14 @@ from ext_city_blocks
 /
 
 -- Sequence
-create sequence sgid_seq
+create sequence geolite2_owner.sgid_seq
 /
 
 -- Triggers
-create or replace trigger etl_control_biu
+create or replace trigger geolite2_owner.etl_control_biu
 before
 insert or
-update on etl_control
+update on geolite2_owner.etl_control
 for each row
 begin
 
@@ -280,10 +274,10 @@ begin
 end;
 /
 
-create or replace trigger etl_metadata_biu
+create or replace trigger geolite2_owner.etl_metadata_biu
 before
 insert or
-update on etl_metadata
+update on geolite2_owner.etl_metadata
 for each row
 begin
 
@@ -305,122 +299,119 @@ end;
 
 -- Data
 SET DEFINE OFF;
-insert into etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' , 'ASN_BLOCKS', 'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
+insert into geolite2_owner.etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' , 'ASN_BLOCKS', 'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
 /
-insert into etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' ,'CITY_BLOCKS',  'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
+insert into geolite2_owner.etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' ,'CITY_BLOCKS',  'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
 /
-insert into etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' ,'CITY_LOCATIONS', 'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
-/
-
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-ASN-CSV.zip','ETL_FLOW','ASN_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-City-CSV.zip','ETL_FLOW','CITY_LOCATIONS',null,'2')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-City-CSV.zip','ETL_FLOW','CITY_BLOCKS',null,'3')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_CITY_LOCATIONS','TARGET_SYNONYM','CITY_LOCATIONS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_ASN_BLOCKS','TARGET_SYNONYM','ASN_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_CITY_BLOCKS','TARGET_SYNONYM','CITY_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_CITY_LOCATIONS','SOURCE_SYNONYM','CITY_LOCATIONS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_CITY_BLOCKS','SOURCE_SYNONYM','CITY_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_ASN_BLOCKS','SOURCE_SYNONYM','ASN_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_ASN_BLOCKS','LOAD_FROM_FILE','ASN_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_CITY_BLOCKS','LOAD_FROM_FILE','CITY_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_CITY_LOCATIONS','LOAD_FROM_FILE','CITY_LOCATIONS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_ASN_BLOCKS','LOAD_FROM_SRC_TABLE','ASN_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_CITY_BLOCKS','LOAD_FROM_SRC_TABLE','CITY_BLOCKS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_CITY_LOCATIONS','LOAD_FROM_SRC_TABLE','CITY_LOCATIONS',null,'1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_START','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_END','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_ADDRESS','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','AUTONOMOUS_SYSTEM_NUMBER','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_START','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_END','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_ADDRESS','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','GEONAME_ID','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','REGISTERED_COUNTRY_GEONAME_ID','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','REPRESENTED_COUNTRY_GEONAME_ID','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','IS_ANONYMOUS_PROXY','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','IS_SATELLITE_PROVIDER','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','GEONAME_ID','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','LOCALE_CODE','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CONTINENT_CODE','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CONTINENT_NAME','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','COUNTRY_ISO_CODE','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','COUNTRY_NAME','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_1_ISO_CODE','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_1_NAME','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_2_ISO_CODE','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_2_NAME','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CITY_NAME','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','IS_IN_EUROPEAN_UNION','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ASN_BLOCKS_PK','PRIMARY_KEY','ASN_BLOCKS','NETWORK_START','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ASN_BLOCKS_PK','PRIMARY_KEY','ASN_BLOCKS','NETWORK_END','2')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_LOCATIONS_PK','PRIMARY_KEY','CITY_LOCATIONS','GEONAME_ID','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_PK','PRIMARY_KEY','CITY_BLOCKS','NETWORK_START','1')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_PK','PRIMARY_KEY','CITY_BLOCKS','NETWORK_END','2')
-/
-insert into etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_IX1','INDEX','CITY_BLOCKS','GEONAME_ID','1')
+insert into geolite2_owner.etl_control (src_schema, trg_schema, table_name, last_source,last_row_cnt, last_load_date, last_file_date) values ('GEOLITE2_B', 'GEOLITE2_A' ,'CITY_LOCATIONS', 'NOT_RUN', 0, localtimestamp - 3650, localtimestamp - 3650)
 /
 
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-ASN-CSV.zip','ETL_FLOW','ASN_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-City-CSV.zip','ETL_FLOW','CITY_LOCATIONS',null,'2')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('GeoLite2-City-CSV.zip','ETL_FLOW','CITY_BLOCKS',null,'3')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_CITY_LOCATIONS','TARGET_SYNONYM','CITY_LOCATIONS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_ASN_BLOCKS','TARGET_SYNONYM','ASN_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('TARGET_CITY_BLOCKS','TARGET_SYNONYM','CITY_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_CITY_LOCATIONS','SOURCE_SYNONYM','CITY_LOCATIONS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_CITY_BLOCKS','SOURCE_SYNONYM','CITY_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SOURCE_ASN_BLOCKS','SOURCE_SYNONYM','ASN_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_ASN_BLOCKS','LOAD_FROM_FILE','ASN_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_CITY_BLOCKS','LOAD_FROM_FILE','CITY_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_EXT_CITY_LOCATIONS','LOAD_FROM_FILE','CITY_LOCATIONS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_ASN_BLOCKS','LOAD_FROM_SRC_TABLE','ASN_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_CITY_BLOCKS','LOAD_FROM_SRC_TABLE','CITY_BLOCKS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ETL_LOAD_UTIL.INSERT_SRC_CITY_LOCATIONS','LOAD_FROM_SRC_TABLE','CITY_LOCATIONS',null,'1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_START','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_END','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','NETWORK_ADDRESS','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','ASN_BLOCKS','AUTONOMOUS_SYSTEM_NUMBER','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_START','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_END','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','NETWORK_ADDRESS','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','GEONAME_ID','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','REGISTERED_COUNTRY_GEONAME_ID','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','REPRESENTED_COUNTRY_GEONAME_ID','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','IS_ANONYMOUS_PROXY','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_BLOCKS','IS_SATELLITE_PROVIDER','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','GEONAME_ID','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','LOCALE_CODE','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CONTINENT_CODE','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CONTINENT_NAME','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','COUNTRY_ISO_CODE','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','COUNTRY_NAME','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_1_ISO_CODE','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_1_NAME','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_2_ISO_CODE','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','SUBDIVISION_2_NAME','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','CITY_NAME','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('SYS_C','NOT_NULL','CITY_LOCATIONS','IS_IN_EUROPEAN_UNION','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ASN_BLOCKS_PK','PRIMARY_KEY','ASN_BLOCKS','NETWORK_START','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('ASN_BLOCKS_PK','PRIMARY_KEY','ASN_BLOCKS','NETWORK_END','2')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_LOCATIONS_PK','PRIMARY_KEY','CITY_LOCATIONS','GEONAME_ID','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_PK','PRIMARY_KEY','CITY_BLOCKS','NETWORK_START','1')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_PK','PRIMARY_KEY','CITY_BLOCKS','NETWORK_END','2')
+/
+insert into geolite2_owner.etl_metadata (object_name,object_type,table_name,column_name,sort_seq) values ('CITY_BLOCKS_IX1','INDEX','CITY_BLOCKS','GEONAME_ID','1')
+/
 commit
 /
 
-
 -- ETL Target synonyms
-create or replace synonym target_city_locations for geolite2_a.city_locations
+create or replace synonym geolite2_owner.target_city_locations for geolite2_a.city_locations
 /
-create or replace synonym target_city_blocks for geolite2_a.city_blocks
+create or replace synonym geolite2_owner.target_city_blocks for geolite2_a.city_blocks
 /
-create or replace synonym target_asn_blocks for geolite2_a.asn_blocks
+create or replace synonym geolite2_owner.target_asn_blocks for geolite2_a.asn_blocks
 /
 
 -- Data source synonyms
-create or replace synonym source_city_locations for geolite2_b.city_locations
+create or replace synonym geolite2_owner.source_city_locations for geolite2_b.city_locations
 /
-create or replace synonym source_city_blocks for geolite2_b.city_blocks
+create or replace synonym geolite2_owner.source_city_blocks for geolite2_b.city_blocks
 /
-create or replace synonym source_asn_blocks for geolite2_b.asn_blocks
+create or replace synonym geolite2_owner.source_asn_blocks for geolite2_b.asn_blocks
 /
-
 

@@ -1,10 +1,11 @@
-
+/*
 drop tablespace geolite2_users including contents and datafiles
 /
 drop tablespace geolite2_a including contents and datafiles
 /
 drop tablespace geolite2_b including contents and datafiles
 /
+*/
 
 create tablespace geolite2_users datafile '/u01/app/oracle/oradata/XE/geolite2_users.dbf'
 size 1M

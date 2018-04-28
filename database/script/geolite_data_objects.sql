@@ -1,11 +1,16 @@
-/*
-drop table city_locations purge
-/
-drop table asn_blocks purge
-/
-drop table city_blocks purge
-/
-*/
+Rem
+Rem   Name
+Rem     geolite_data_objects.sql
+Rem
+Rem   Description
+Rem     create needed objects to users GEOLITE2_A and GEOLITE2_B
+Rem
+Rem   Change log
+Rem     JLa 27.03.2018 / Created
+Rem
+Rem   Notes
+Rem     Assumes the SYS user is connected and current_schema is set to GEOLITE2_A or GEOLITE2_B
+Rem
 
 -- Tables
 create table city_locations(

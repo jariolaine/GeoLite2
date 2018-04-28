@@ -35,7 +35,7 @@ chown oracle /opt/geolite2/data/GeoLite2-ASN-CSV.zip
 chown oracle /opt/geolite2/data/GeoLite2-City-CSV.zip
 ```
 
-Place script download_data.sh to directory /opt/geolite2/script.
+Place script [download_data.sh](server/download_data.sh) to directory /opt/geolite2/script.
 
 Give execute privilege to dba group
 ```

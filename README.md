@@ -1,7 +1,5 @@
 # GeoLite2
-Setup Extrac, Transform and Load (ETL) process for [Maxmind](https://twitter.com/maxmind) [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) CSV files to Oracle database.
-
-Scripts creates needed database users, objects and set scheduled job to execute ETL process once a day. 
+Scripts to setup Extrac, Transform and Load (ETL) process for [Maxmind](https://twitter.com/maxmind) [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) CSV files to Oracle database. 
 
 Scripts are tested only using 11G XE database.
 ## Prerequisites
@@ -31,7 +29,7 @@ Change oracle as owner of dummy files
 chown oracle /opt/geolite2/data/GeoLite2-ASN-CSV.zip
 chown oracle /opt/geolite2/data/GeoLite2-City-CSV.zip
 ```
-Place script [download_data.sh](server/download_data.sh) to directory /opt/geolite2/script.
+Place script [download_data.sh](server/download_data.sh) to directory /opt/geolite2/script
 
 Give execute privilege to dba group
 ```
@@ -40,7 +38,7 @@ chmod g+x /opt/geolite2/script/download_data.sh
 ```
 ### Database
 *NOTE!*
-Install script drops and recreates users _GEOLITE2_A_, _GEOLITE2_B_, _GEOLITE2_OWNER_ and _GEOLITE2_READER_ if exists.
+Install script drops and recreates users _GEOLITE2_A_, _GEOLITE2_B_, _GEOLITE2_OWNER_ and _GEOLITE2_READER_ if exists. 
 Database directories _GEOLITE2_SCRIPT_DIR_, _GEOLITE2_LOG_DIR_ and _GEOLITE2_DATA_DIR_ are dropped and recreated.
 
 Script install.sql needs four arguments
@@ -52,6 +50,62 @@ Script install.sql needs four arguments
 Run install.sql script as SYS e.g.
 ```
 @install.sql USERS USERS USERS TEMP
+```
+Change users _GEOLITE2_OWNER_ and _GEOLITE2_READER_ password
+```
+alter user geolite2_user identified by <password>
+/
+alter user geolite2_owner identified by <password>
+/
+```
+Connect using user _GEOLITE2_OWNER_ and run ETL process to populated data
+```
+begin
+  dbms_scheduler.run_job('RUN_ETL_FLOW_JOB');
+end;
+/
+```
+## Usage
+Example query when connected using user _GEOLITE2_READER_
+```
+with src as (
+  select '8.8.8.8' as ip
+  from dual
+)
+, fn as (
+  select ip_to_dec(ip) as ip_dec 
+  from src
+)
+select src.ip
+  ,t1.network_address as network
+  ,(
+    select autonomous_system_organization
+    from asn_blocks x
+    where 1 = 1
+      and fn.ip_dec
+    between x.network_start
+      and x.network_end
+  ) as autonomous_system_organization
+  ,t2.continent_code
+  ,t2.continent_name
+  ,t2.country_iso_code as country_code
+  ,t2.country_name
+  ,t2.subdivision_1_iso_code as region_code
+  ,t2.subdivision_1_name as region_name
+  ,t2.city_name
+  ,t1.postal_code as zip_code
+  ,t1.latitude
+  ,t1.longitude
+  ,t2.metro_code
+from city_blocks t1
+join city_locations t2 on t1.geoname_id = t2.geoname_id
+cross join src
+cross join fn
+where 1 = 1
+  and fn.ip_dec
+between t1.network_start
+  and t1.network_end
+;
 ```
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

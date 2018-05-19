@@ -28,10 +28,11 @@ NEW_FILE_DATE="$(stat -c %y $1)"
 if [[ $OLD_FILE_DATE != $NEW_FILE_DATE ]]
 then
 
-	# Extract data files from new zip file
-	unzip -jo $1 -d $DATA_DIR	>> $LOG_FILE
+  # Extract data files from new zip file
+  unzip -jo $1 -d $DATA_DIR	>> $LOG_FILE
 
 fi
 
 # Output file date for Oracle external table
 echo "\"$FILE_NAME\",\"$NEW_FILE_DATE\""
+

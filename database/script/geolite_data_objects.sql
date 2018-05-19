@@ -34,8 +34,8 @@ create table city_locations(
 create table asn_blocks(
   network_start number(38,0),
   network_end number(38,0),
-	network_address varchar2(43 char),
-	autonomous_system_number number(10,0),
+  network_address varchar2(43 char),
+  autonomous_system_number number(10,0),
   autonomous_system_organization varchar2(256 char)
 ) nologging pctfree 0 enable row movement
 /
@@ -43,16 +43,16 @@ create table asn_blocks(
 create table city_blocks(
   network_start number(38,0),
   network_end number(38,0),
-	network_address varchar2(43 char),
-	geoname_id number(10,0),
-	registered_country_geoname_id number(10,0),
-	represented_country_geoname_id number(10,0),
-	is_anonymous_proxy number(1,0),
-	is_satellite_provider number(1,0),
-	postal_code varchar2(20 char),
-	latitude number(9,6),
-	longitude number(9,6),
-	accuracy_radius number(10,0)
+  network_address varchar2(43 char),
+  geoname_id number(10,0),
+  registered_country_geoname_id number(10,0),
+  represented_country_geoname_id number(10,0),
+  is_anonymous_proxy number(1,0),
+  is_satellite_provider number(1,0),
+  postal_code varchar2(20 char),
+  latitude number(9,6),
+  longitude number(9,6),
+  accuracy_radius number(10,0)
 ) nologging pctfree 0 enable row movement
 /
 

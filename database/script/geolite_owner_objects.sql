@@ -58,8 +58,8 @@ organization external (
 /
 
 create table geolite2_owner.ext_asn_blocks(
-	network_address varchar2(43 char),
-	autonomous_system_number number(10,0),
+  network_address varchar2(43 char),
+  autonomous_system_number number(10,0),
   autonomous_system_organization varchar2(256 char)
 )
 organization external (
@@ -68,7 +68,7 @@ organization external (
   access parameters (
     records delimited by newline
     characterset al32utf8
-	  skip 1
+    skip 1
     load when network_address != 'network'
     nologfile
     nobadfile
@@ -84,11 +84,11 @@ organization external (
 /
 
 create table geolite2_owner.ext_city_blocks(
-	network_address varchar2(43 char),
-	geoname_id number(10,0),
-	registered_country_geoname_id number(10,0),
-	represented_country_geoname_id number(10,0),
-	is_anonymous_proxy number(1,0),
+  network_address varchar2(43 char),
+  geoname_id number(10,0),
+  registered_country_geoname_id number(10,0),
+  represented_country_geoname_id number(10,0),
+  is_anonymous_proxy number(1,0),
   is_satellite_provider number(1,0),
   postal_code varchar2(20 char),
   latitude number(9,6),

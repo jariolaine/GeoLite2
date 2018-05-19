@@ -12,6 +12,7 @@ as
 --------------------------------------------------------------------------------
 end "ETL_TBL_UTIL";
 
+
 /
 
 
@@ -127,13 +128,13 @@ as
         )
       end
     ;
-    
+
     for i in 1 .. l_sql_arr.count
     loop
       l_sql := l_sql_arr(i);
       execute immediate l_sql;
     end loop;
-    
+
   exception when others then
     dbms_output.put_line(l_sql);
     raise;
@@ -215,4 +216,5 @@ as
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 end "ETL_TBL_UTIL";
+
 /

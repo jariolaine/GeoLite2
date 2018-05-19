@@ -54,6 +54,7 @@ as
 --------------------------------------------------------------------------------
 end "ETL_UTIL";
 
+
 /
 
 
@@ -67,16 +68,20 @@ as
   c_object_type_src_synonym   constant varchar2(40) := 'SOURCE_SYNONYM';
   c_object_type_trg_synonym   constant varchar2(40) := 'TARGET_SYNONYM';
 
-  c_source_sync               constant varchar2(40) := 'SYNC';
-  c_source_file               constant varchar2(40) := 'FILE';
+  c_load_source_sync          constant varchar2(40) := 'SYNC';
+  c_load_source_file          constant varchar2(40) := 'FILE';
+  
+  c_initialize_table_prog     constant varchar2(40) := 'INITIALIZE_TABLE';
+  c_finalize_table_prog       constant varchar2(40) := 'FINALIZE_TABLE';
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
   -- Private procedures and functions
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-  procedure initialize_table(
+  procedure call_etl_tbl_proxy(
     p_owner      in varchar2,
+    p_program    in varchar2,
     p_table_name in varchar2
   )
   as
@@ -84,7 +89,8 @@ as
   begin
     l_sql := 'begin '
       || p_owner
-      || '.etl_tbl_proxy.initialize_table'
+      || '.ETL_TBL_PROXY.'
+      || p_program
       || '(:p_table_name); '
       || 'end;'
     ;
@@ -94,29 +100,7 @@ as
   exception when others then
     dbms_output.put_line(l_sql);
     raise;
-  end initialize_table;
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-  procedure finalize_table(
-    p_owner      in varchar2,
-    p_table_name in varchar2
-  )
-  as
-    l_sql varchar2(32700);
-  begin
-      l_sql := 'begin '
-        || p_owner
-        || '.etl_tbl_proxy.finalize_table'
-        || '(:p_table_name); '
-        || 'end;'
-      ;
-      execute immediate l_sql
-      using p_table_name
-      ;
-  exception when others then
-    dbms_output.put_line(l_sql);
-    raise;
-  end finalize_table;
+  end call_etl_tbl_proxy;
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------  
   procedure update_etl_control(
@@ -335,14 +319,15 @@ as
       join etl_control t2 on t1.table_name = t2.table_name
       where 1 = 1
         and t1.object_type = etl_util.c_object_type_etl_flow
-        and t2.last_source = etl_util.c_source_file
+        and t2.last_source = etl_util.c_load_source_file
         and t2.last_load_date < p_last_load_date
       order by t1.sort_seq
     )loop
 
       -- Initiliaze table for ETL (truncate table, drop constraints and indexes)
-      etl_util.initialize_table(
+      etl_util.call_etl_tbl_proxy(
          p_owner => c1.trg_schema
+        ,p_program => etl_util.c_initialize_table_prog
         ,p_table_name => c1.table_name
       );
       -- Load data
@@ -351,14 +336,15 @@ as
         ,p_load_type  => etl_util.g_load_from_src_tbl
       );
       -- Finalize load (create constraints and indexes)
-      etl_util.finalize_table(
+      etl_util.call_etl_tbl_proxy(
          p_owner => c1.trg_schema
+        ,p_program => etl_util.c_finalize_table_prog
         ,p_table_name => c1.table_name
       );
       -- Update etl end to control table        
       etl_util.update_etl_control(
          p_table_name => c1.table_name
-        ,p_source     => etl_util.c_source_sync
+        ,p_source     => etl_util.c_load_source_sync
         ,p_row_cnt    => l_row_cnt
         ,p_file_date  => c1.last_file_date
       );
@@ -396,8 +382,9 @@ as
 
       -- Initiliaze table for ETL
       -- (truncate table, drop constraints and indexes)
-      etl_util.initialize_table(
+      etl_util.call_etl_tbl_proxy(
          p_owner => c1.trg_schema
+        ,p_program => etl_util.c_initialize_table_prog
         ,p_table_name => c1.table_name
       );
       -- Load data
@@ -405,21 +392,22 @@ as
          p_table_name => c1.table_name
       );
       -- Finalize load (create constraints and indexes)
-      etl_util.finalize_table(
+      etl_util.call_etl_tbl_proxy(
          p_owner => c1.trg_schema
+        ,p_program => etl_util.c_finalize_table_prog
         ,p_table_name => c1.table_name
       );
       -- Update etl end to control table        
       etl_util.update_etl_control(
          p_table_name => c1.table_name
-        ,p_source     => etl_util.c_source_file
+        ,p_source     => etl_util.c_load_source_file
         ,p_row_cnt    => l_row_cnt
         ,p_file_date  => c1.file_date
       );
 
     end loop;
 
-    -- Refresh other schema tables from current schema
+    -- Refresh other schema tables from cur'etl_tbl_proxy.finalize_table'rent schema
     etl_util.sync_schema(
       p_last_load_date => l_etl_start
     );
@@ -430,5 +418,4 @@ as
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 end "ETL_UTIL";
-
 /

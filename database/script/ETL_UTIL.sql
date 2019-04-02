@@ -362,7 +362,7 @@ as
   begin
 
     l_etl_start := localtimestamp;
-
+    
     for c1 in(
       select t1.table_name
         ,t2.trg_schema
@@ -375,7 +375,7 @@ as
       and (
         ( t1.object_name = p_flow_name or p_flow_name = etl_util.g_etl_flow_all )
         or
-        ( t2.last_file_date != t3.file_date and p_flow_name = etl_util.g_etl_flow_new )
+        ( t2.last_file_date < t3.file_date and p_flow_name = etl_util.g_etl_flow_new )
       )
       order by t1.sort_seq
     )loop
@@ -407,7 +407,7 @@ as
 
     end loop;
 
-    -- Refresh other schema tables from cur'etl_tbl_proxy.finalize_table'rent schema
+    -- Refresh inactive schema tables from active schema
     etl_util.sync_schema(
       p_last_load_date => l_etl_start
     );

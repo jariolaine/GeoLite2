@@ -1,9 +1,21 @@
-# GeoLite2
+# Maxmind GeoLite2 CSV to Oracle database
 Scripts to setup Extrac, Transform and Load (ETL) process for [Maxmind](https://twitter.com/maxmind) [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) CSV files to Oracle database. 
 
-Scripts are tested only using 11G XE database.
+## Description
+Scripts creates totally four users to database.
++ _GEOLITE2_A_ and _GEOLITE2_B_ are owners of tables where CSV data is loaded
++ _GEOLITE2_OWNER_ owns object relating ETL logic
++ _GEOLITE2_READER_ is for accesing data
+
+User _GEOLITE2_READER_ access active data schema 
+### ETL Process
+Data is loaded to user _GEOLITE2_A_ or _GEOLITE2_B_ tables depending which one isn't active.
+Before data load target table is truncated, constraint and indexes are droped.
+After succesful data load, synonyms are swithed
+
 ## Prerequisites
-Oracle database on Linux server
+Oracle database on Linux server. 
+*NOTE!*Scripts are tested only using 11G XE database.
 ## Installing
 ### Prepare server
 Create directories to database server

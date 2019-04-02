@@ -1,9 +1,9 @@
 Rem
 Rem   Name
-Rem     scheduler_job.sql
+Rem     scheduler_job_email_notification.sql
 Rem
 Rem   Description
-Rem     create scheduled job to run ETL proces
+Rem     add email notification to scheduled job that runs ETL proces
 Rem
 Rem   Change log
 Rem     JLa 27.03.2018 / Created

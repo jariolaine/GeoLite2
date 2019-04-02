@@ -11,11 +11,11 @@ User _GEOLITE2_READER_ access active data schema
 ### ETL Process
 Data is loaded to user _GEOLITE2_A_ or _GEOLITE2_B_ tables depending which one isn't active.
 Before data load target table is truncated, constraint and indexes are droped.
-After succesful data load, synonyms are swithed
+After succesful data load, synonyms are pointed to schema tables where data was loaded.
 
 ## Prerequisites
 Oracle database on Linux server. 
-*NOTE!*Scripts are tested only using 11G XE database.
+*NOTE!* Scripts are tested only using 11G XE database.
 ## Installing
 ### Prepare server
 Create directories to database server

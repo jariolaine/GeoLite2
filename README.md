@@ -1,3 +1,5 @@
+![Not Maintained](https://img.shields.io/badge/Maintenance%20Level-Abandoned-orange.svg)
+
 # Maxmind GeoLite2 CSV to Oracle database
 Scripts to setup Extrac, Transform and Load (ETL) process for [Maxmind](https://twitter.com/maxmind) [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) CSV files to Oracle database. 
 
